@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy[asyncio]
+asyncpg
+alembic
+pydantic[email]
+python-dotenv
+redis
+aiokafka
+httpx
+pytest
+pytest-asyncio
+black
+ruff
+pydantic-settings
