@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from sqlalchemy import inspect
+from fastapi import Depends, FastAPI
+from redis.asyncio import Redis
 from app.database.session import engine
 from app.database.base import Base, SCHEMA_CREATION_ENVS
 from app.core.config import get_settings
+from app.utils.redis_client import get_redis, init_redis_pool
 
 settings = get_settings()
 
@@ -15,19 +16,8 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-    async with engine.begin() as conn:
+    await init_redis_pool()
 
-        def list_tables(connection):
-            inspector = inspect(connection)
-            return inspector.get_table_names(schema="public")
-        
-        table_names = await conn.run_sync(list_tables)
-
-    if table_names:
-        print(f"Found {len(table_names)} tables: {', '.join(table_names)}")
-    else:
-        print("No tables found in the database.")
-        
     yield 
     
     print("Application shutting down...")
@@ -38,3 +28,17 @@ app = FastAPI(
     version=settings.VERSION,
     lifespan=lifespan
 )
+
+@app.get("/",tags=["health"])
+async def health():
+    return "Healthy"
+
+@app.get("/test-cache",tags=["redis"])
+async def redis_health(
+    redis : Redis = Depends(get_redis)
+):
+    await redis.set("health_check", "ok")
+
+    status = await redis.get("health_check")
+
+    return {"status": "ok", "check_value": status}
