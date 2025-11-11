@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     ALGORITHM : str
     ACCESS_TOKEN_EXPIRE_MINUTES : int
 
+
+    #SMTP
+    SMTP_HOST : str
+    SMTP_PORT : int
+    SMTP_USER : str
+    SERVER_PASSWORD : str
+    SMTP_FROM : str
+
     class Config:
         env_file = ".env"
         case_sensitive = True

@@ -13,3 +13,8 @@ pytest-asyncio
 black
 ruff
 pydantic-settings
+email-validator
+passlib[bcrypt]
+python-jose[cryptography]
+aiosmtplib
+
