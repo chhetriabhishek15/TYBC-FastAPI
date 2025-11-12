@@ -5,6 +5,7 @@ from app.database.session import engine
 from app.database.base import Base, SCHEMA_CREATION_ENVS
 from app.core.config import get_settings
 from app.utils.redis_client import get_redis, init_redis_pool
+from app.routers import api_routers
 
 settings = get_settings()
 
@@ -42,3 +43,5 @@ async def redis_health(
     status = await redis.get("health_check")
 
     return {"status": "ok", "check_value": status}
+
+app.include_router(api_routers)

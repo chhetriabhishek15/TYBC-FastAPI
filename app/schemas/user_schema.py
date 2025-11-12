@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import UUID
+from uuid import UUID
 
 from app.core.enums import RoleEnum
 

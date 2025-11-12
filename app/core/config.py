@@ -1,5 +1,5 @@
 from functools import lru_cache
-from pydantic import computed_field
+from pydantic import HttpUrl, computed_field
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     SMTP_USER : str
     SERVER_PASSWORD : str
     SMTP_FROM : str
+
+    #URL
+    BACKEND_URL : HttpUrl
 
     class Config:
         env_file = ".env"
