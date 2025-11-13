@@ -6,7 +6,6 @@ settings = get_settings()
 
 async def send_email_async(to_email: str, subject: str, body: str, html: str | None = None):
     msg = EmailMessage()
-    msg["From"] = settings.SMTP_FROM
     msg["To"] = to_email
     msg["Subject"] = subject
     if html:
@@ -21,5 +20,6 @@ async def send_email_async(to_email: str, subject: str, body: str, html: str | N
         port=int(settings.SMTP_PORT),
         username=settings.SMTP_USER,
         password=settings.SERVER_PASSWORD,
-        start_tls=True
+        start_tls=True,
+        sender=settings.SMTP_FROM
     )

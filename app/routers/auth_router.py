@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
 from app.schemas.user_schema import UserCreate, UserOut, TokenResponse
@@ -12,7 +13,7 @@ settings = get_settings()
 
 router = APIRouter()
 
-@router.post("/signup", status_code=status.HTTP_201_CREATED)
+@router.post("/signup", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def signup(
     payload : UserCreate,
     background_tasks : BackgroundTasks,
@@ -27,7 +28,7 @@ async def signup(
     # create secrets
 
     token = create_email_token(str(user.id))
-    verify_url = f"{settings.BACKEND_URL}/auth/verify?token={token}"
+    verify_url = f"{settings.BACKEND_URL}auth/verify?token={token}"
 
     background_tasks.add_task(
         send_email_async,
@@ -53,5 +54,22 @@ async def verify(token: str, db: AsyncSession = Depends(get_db)):
         return {"message": "Already verified"}
     await service.mark_verified(user)
     return {"message": "Email verified"}
+
+
+@router.post("/login",response_model=TokenResponse)
+async def login(form_data : OAuth2PasswordRequestForm = Depends(),db : AsyncSession = Depends(get_db)):
+    repo = UserService(db).repo
+    user = await repo.get_by_email(form_data.username)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    if not verify_password(form_data.password,user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    if not user.is_verified:
+        raise HTTPException(status_code=403, detail="Email not verified")
+
+    token = create_access_token(str(user.id),user.role)
+
+    return {"access_token": token, "token_type": "bearer"}
+
 
 

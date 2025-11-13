@@ -1,6 +1,6 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 from jose import jwt, JWTError
 from app.core.config import get_settings
 from app.core.enums import TokenAudience, RoleEnum
@@ -12,14 +12,14 @@ from app.utils.datetimeutil import utcnow
 
 settings = get_settings()
 
-pwd_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
+password_hash = PasswordHash.recommended()
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def hash_password(pasword : str)->str:
-    return pwd_context.hash(pasword)
+    return password_hash.hash(pasword)
 
 def verify_password(plain : str , hashed_passord : str) -> bool:
-    return pwd_context.verify(plain,hashed_passord)
+    return password_hash.verify(plain,hashed_passord)
 
 def _create_jwt(
     subject : str, 
@@ -28,12 +28,13 @@ def _create_jwt(
     extra_claims : Dict[str,Any] | None = None
 ) -> str :
     
+    now = datetime.utcnow()
     payload = {
-        "sub" : str(subject),
-        "iat" : utcnow,
-        "nbf" : utcnow,
-        "exp" : utcnow + delta,
-        "aud" : audience.value
+        "sub": str(subject),
+        "iat": now,
+        "nbf": now,
+        "exp": now + delta,
+        "aud": audience.value
     }
 
     if extra_claims:

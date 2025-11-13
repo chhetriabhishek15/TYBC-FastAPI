@@ -14,7 +14,7 @@ black
 ruff
 pydantic-settings
 email-validator
-passlib[bcrypt]
+pwdlib
 python-jose[cryptography]
 aiosmtplib
-
+python-multipart
